@@ -1,0 +1,16 @@
+{
+  "name": "xv6-devcontainer",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "remoteUser": "vscode",
+  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y build-essential gdb qemu-system-x86 make git",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.cpptools"
+      ]
+    }
+  }
+}
