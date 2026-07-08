@@ -45,8 +45,13 @@ int main(void) {
             exit();
         } else if (pid == 0) {
             // Contexto de ejecucion del PROCESO HIJO.
-            // Aunque fork() le devuelve 0 al hijo, este ya posee un PID real asignado por el kernel en la tabla de procesos.
-            // Se invoca la syscall getpid() para consultar ese identificador exacto y pasarlo a la funcion.
+            // Se asigna una prioridad distinta a cada hijo justo despues del fork.
+            int prioridad = 15;
+            if (i == 1) prioridad = 10;
+            else if (i == 2) prioridad = 5;
+            else if (i == 3) prioridad = 1;
+            setpriority(getpid(), prioridad);
+            printf(1, "[PRIORIDAD ASIGNADA] Hijo #%d (PID %d) prioridad %d\n", i, getpid(), prioridad);
             do_heavy_work(i, getpid());
         } else {
             // Contexto de ejecucion del PROCESO PADRE.

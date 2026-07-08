@@ -184,7 +184,6 @@ UPROGS=\
 	_usertests\
 	_wc\
 	_zombie\
-	# Programa personalizado para probar el planificador Round Robin
 	_sched_test\
 
 fs.img: mkfs README $(UPROGS)
