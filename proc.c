@@ -88,6 +88,7 @@ allocproc(void)
 found:
   p->state = EMBRYO;
   p->pid = nextpid++;
+  p->priority = 10;  // Prioridad base neutra para el Planificador por Prioridades
 
   release(&ptable.lock);
 
@@ -319,6 +320,7 @@ wait(void)
 //  - swtch to start running that process
 //  - eventually that process transfers control
 //      via swtch back to the scheduler.
+// Per-CPU process scheduler (Implementación: Round Robin Circular)
 void
 scheduler(void)
 {
@@ -327,31 +329,32 @@ scheduler(void)
   c->proc = 0;
   
   for(;;){
-    // Enable interrupts on this processor.
     sti();
 
-    // Loop over process table looking for process to run.
     acquire(&ptable.lock);
+
+    // Planificador no apropiativo por prioridades estáticas.
+    // Se elige el RUNNABLE con prioridad más alta (valor menor = mayor prioridad).
+    struct proc *best = 0;
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
       if(p->state != RUNNABLE)
         continue;
+      if(best == 0 || p->priority < best->priority)
+        best = p;
+    }
 
-      // Switch to chosen process.  It is the process's job
-      // to release ptable.lock and then reacquire it
-      // before jumping back to us.
-      c->proc = p;
-      switchuvm(p);
-      p->state = RUNNING;
+    if(best){
+      c->proc = best;
+      switchuvm(best);
+      best->state = RUNNING;
 
-      swtch(&(c->scheduler), p->context);
+      // Cambio de contexto al proceso seleccionado según prioridad.
+      swtch(&(c->scheduler), best->context);
       switchkvm();
 
-      // Process is done running for now.
-      // It should have changed its p->state before coming back.
       c->proc = 0;
     }
     release(&ptable.lock);
-
   }
 }
 

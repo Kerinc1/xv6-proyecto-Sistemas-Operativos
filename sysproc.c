@@ -6,6 +6,12 @@
 #include "memlayout.h"
 #include "mmu.h"
 #include "proc.h"
+#include "spinlock.h"
+
+extern struct {
+  struct spinlock lock;
+  struct proc proc[NPROC];
+} ptable;
 
 int
 sys_fork(void)
@@ -79,6 +85,27 @@ sys_sleep(void)
 
 // return how many clock tick interrupts have occurred
 // since start.
+int
+sys_setpriority(void)
+{
+  int pid, priority;
+  struct proc *p;
+
+  if(argint(0, &pid) < 0 || argint(1, &priority) < 0)
+    return -1;
+
+  acquire(&ptable.lock);
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+    if(p->pid == pid){
+      p->priority = priority;
+      release(&ptable.lock);
+      return 0;
+    }
+  }
+  release(&ptable.lock);
+  return -1;
+}
+
 int
 sys_uptime(void)
 {
