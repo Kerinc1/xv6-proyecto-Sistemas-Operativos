@@ -21,4 +21,5 @@
 #define SYS_mkdir  20
 #define SYS_close  21
 #define SYS_setpriority 22
+// Número de llamada al sistema para `freemem`: devuelve memoria libre en bytes.
 #define SYS_freemem 23

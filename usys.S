@@ -30,4 +30,5 @@ SYSCALL(sbrk)
 SYSCALL(sleep)
 SYSCALL(setpriority)
 SYSCALL(uptime)
+// Interfaz de llamada al sistema para "freemem" y devuelve memoria libre en bytes
 SYSCALL(freemem)
