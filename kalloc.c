@@ -20,6 +20,7 @@ struct run {
 struct {
   struct spinlock lock;
   int use_lock;
+  int free_pages;
   struct run *freelist;
 } kmem;
 
@@ -33,6 +34,7 @@ kinit1(void *vstart, void *vend)
 {
   initlock(&kmem.lock, "kmem");
   kmem.use_lock = 0;
+  kmem.free_pages = 0;
   freerange(vstart, vend);
 }
 
@@ -72,6 +74,7 @@ kfree(char *v)
   r = (struct run*)v;
   r->next = kmem.freelist;
   kmem.freelist = r;
+  kmem.free_pages++;
   if(kmem.use_lock)
     release(&kmem.lock);
 }
@@ -87,10 +90,27 @@ kalloc(void)
   if(kmem.use_lock)
     acquire(&kmem.lock);
   r = kmem.freelist;
-  if(r)
+  if(r){
     kmem.freelist = r->next;
+    kmem.free_pages--; // <-- NUEVO: Restamos páginas al asignar
+  }
   if(kmem.use_lock)
     release(&kmem.lock);
   return (char*)r;
 }
 
+
+int
+getfreemem(void)
+{
+  int free_mem;
+  if(kmem.use_lock)
+    acquire(&kmem.lock);
+  
+  free_mem = kmem.free_pages * 4096; 
+  
+  if(kmem.use_lock)
+    release(&kmem.lock);
+    
+  return free_mem;
+}
