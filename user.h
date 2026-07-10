@@ -24,6 +24,8 @@ char* sbrk(int);
 int sleep(int);
 int setpriority(int pid, int priority);
 int uptime(void);
+// Devuelve la memoria libre disponible en bytes consultando desde userland.
+int freemem(void);
 
 // ulib.c
 int stat(const char*, struct stat*);

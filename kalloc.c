@@ -20,6 +20,7 @@ struct run {
 struct {
   struct spinlock lock;
   int use_lock;
+  int free_pages; // Contador de paginas físicas libres disponibles
   struct run *freelist;
 } kmem;
 
@@ -33,6 +34,7 @@ kinit1(void *vstart, void *vend)
 {
   initlock(&kmem.lock, "kmem");
   kmem.use_lock = 0;
+  kmem.free_pages = 0; // Inicia contador de paginas libres
   freerange(vstart, vend);
 }
 
@@ -72,6 +74,7 @@ kfree(char *v)
   r = (struct run*)v;
   r->next = kmem.freelist;
   kmem.freelist = r;
+  kmem.free_pages++; // Se incrementa el contador al liberar una pagina
   if(kmem.use_lock)
     release(&kmem.lock);
 }
@@ -87,10 +90,29 @@ kalloc(void)
   if(kmem.use_lock)
     acquire(&kmem.lock);
   r = kmem.freelist;
-  if(r)
+  if(r){
     kmem.freelist = r->next;
+    kmem.free_pages--; // Decrementa el contador al asignar una página
+  }
   if(kmem.use_lock)
     release(&kmem.lock);
   return (char*)r;
 }
 
+
+int
+getfreemem(void)
+{
+  // Devuelve la memoria libre total en bytes.
+  // Multiplica el contador de páginas libres por el tamaño de página (4096 bytes).
+  int free_mem;
+  if(kmem.use_lock)
+    acquire(&kmem.lock);
+  
+  free_mem = kmem.free_pages * 4096; 
+  
+  if(kmem.use_lock)
+    release(&kmem.lock);
+    
+  return free_mem;
+}

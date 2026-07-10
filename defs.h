@@ -68,6 +68,10 @@ char*           kalloc(void);
 void            kfree(char*);
 void            kinit1(void*, void*);
 void            kinit2(void*, void*);
+// Devuelve la cantidad de memoria libre (en bytes).
+// Implementación en `kalloc.c` y exposicion al espacio de usuario
+// a través del syscall `freemem`.
+int             getfreemem(void);
 
 // kbd.c
 void            kbdintr(void);

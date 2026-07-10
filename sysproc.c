@@ -116,3 +116,10 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
+
+// Llamada al sistema que devuelve la cantidad de memoria libre en bytes
+int
+sys_freemem(void)
+{
+  return getfreemem();
+}
